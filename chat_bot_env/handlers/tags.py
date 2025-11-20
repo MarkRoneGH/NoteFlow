@@ -126,3 +126,55 @@ async def process_new_tag_name(message: Message, state: FSMContext):
 async def back_to_notes(callback: CallbackQuery):
     await callback.message.delete()
     await callback.answer("Возврат к заметкам")
+    
+@router.callback_query(F.data.startswith("show_my_tags_"))
+async def show_my_tags_for_note(callback: CallbackQuery):
+    """Показывает существующие теги пользователя для добавления к заметке"""
+    note_id = int(callback.data.split("_")[3])
+    
+    tags = TagService.get_user_tags(callback.from_user.id)
+    
+    if not tags:
+        # Если тегов нет, предлагаем создать новый
+        await callback.message.edit_text(
+            "📭 У вас пока нет тегов.\n\n"
+            "Хотите создать первый тег?",
+            reply_markup=InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(text="🎯 Создать тег", callback_data=f"new_tag_{note_id}"),
+                    ],
+                    [
+                        InlineKeyboardButton(text="⏩ Пропустить", callback_data=f"skip_tags_{note_id}"),
+                    ]
+                ]
+            )
+        )
+    else:
+        # Показываем существующие теги
+        await callback.message.edit_text(
+            "🏷 Выберите теги для добавления к заметке:",
+            reply_markup=get_tags_keyboard(tags, note_id)
+        )
+    
+    await callback.answer()
+
+@router.callback_query(F.data.startswith("skip_tags_"))
+async def skip_adding_tags(callback: CallbackQuery):
+    """Пропускает добавление тегов"""
+    note_id = int(callback.data.split("_")[2])
+    
+    # Получаем заметку для отображения
+    from services.note_service import NoteService
+    from utils.helpers import format_note
+    from keyboards.note_actions import get_note_actions
+    
+    note = NoteService.get_note_by_id(note_id)
+    tags = TagService.get_note_tags(note_id)
+    tag_names = [tag.name for tag in tags] if tags else []
+    
+    await callback.message.edit_text(
+        f"✅ Заметка сохранена!\n\n{format_note(note, tag_names)}",
+        reply_markup=get_note_actions(note.id, note.status, note.is_pinned)
+    )
+    await callback.answer("Теги не добавлены")

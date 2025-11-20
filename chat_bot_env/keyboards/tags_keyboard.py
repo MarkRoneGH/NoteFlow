@@ -29,3 +29,19 @@ def get_tags_keyboard(tags: List[Tag], note_id: int = None):
     ])
     
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+def get_tags_choice_keyboard(note_id: int):
+    """Клавиатура выбора действия с тегами для новой заметки"""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="🎯 Создать новый тег", callback_data=f"new_tag_{note_id}"),
+            ],
+            [
+                InlineKeyboardButton(text="📋 Выбрать из моих тегов", callback_data=f"show_my_tags_{note_id}"),
+            ],
+            [
+                InlineKeyboardButton(text="⏩ Пропустить", callback_data=f"skip_tags_{note_id}"),
+            ]
+        ]
+    )

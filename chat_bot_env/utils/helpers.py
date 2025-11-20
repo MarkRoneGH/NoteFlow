@@ -30,6 +30,9 @@ def format_notes_list(notes: List[Note]) -> str:
     for note in notes:
         status_icon = "✅" if note.status == 'completed' else "📝"
         pinned_icon = "📌 " if note.is_pinned else ""
+        
+        # Получаем теги для заметки (нужно будет передавать их отдельно)
+        # Пока оставим без тегов в общем списке, они будут в детальном просмотре
         result += f"{pinned_icon}{status_icon} {note.title}\n"
     
     return result

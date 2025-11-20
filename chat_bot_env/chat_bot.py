@@ -22,7 +22,7 @@ async def main():
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
     )
     
-    # Инициализация базы данных
+
     try:
         init_db()
         logging.info("✅ База данных инициализирована")
@@ -33,8 +33,7 @@ async def main():
     # Создание бота и диспетчера
     bot = Bot(token=config.BOT_TOKEN)
     dp = Dispatcher(storage=MemoryStorage())
-    
-    # Регистрация всех роутеров
+
     routers = [
         start_router,
         quick_note_router, 
@@ -46,8 +45,7 @@ async def main():
     
     for router in routers:
         dp.include_router(router)
-    
-    # Настройка и запуск планировщика напоминаний
+  
     scheduler = setup_scheduler(bot)
     scheduler.start()
     
@@ -61,4 +59,7 @@ async def main():
         await bot.session.close()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except(KeyboardInterrupt):
+        print("The program is finished!")
